@@ -1,0 +1,26 @@
+[package]
+name = "hashira"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.89.0"
+description = "Hashira (柱) — MCP server scaffold: tool registry, response helpers, and rmcp boilerplate"
+homepage = "https://github.com/pleme-io/hashira"
+repository = "https://github.com/pleme-io/hashira"
+readme = "README.md"
+license = "MIT"
+categories = ["development-tools"]
+keywords = ["mcp", "rmcp", "server", "tools"]
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+
+[dependencies]
+rmcp = { version = "0.15", features = ["server", "transport-io"] }
+schemars = "0.8"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+tracing = "0.1"
+thiserror = "2"
