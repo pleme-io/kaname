@@ -9,7 +9,7 @@ cargo test           # 25 unit tests
 
 ## Architecture
 
-Extracts the common MCP server boilerplate from karakuri and hikyaku into reusable types: tool registration, response formatting, and rmcp type re-exports.
+Extracts the common MCP server boilerplate from ayatsuri and hikyaku into reusable types: tool registration, response formatting, and rmcp type re-exports.
 
 ### Module Map
 
@@ -46,5 +46,5 @@ let error = ToolResponse::error("something broke");
 
 ## Consumers
 
-- **karakuri** -- window manager MCP server
+- **ayatsuri** -- window manager MCP server
 - **hikyaku** -- email client MCP server
