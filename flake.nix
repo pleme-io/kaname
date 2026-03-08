@@ -1,19 +1,14 @@
 {
-  description = "Hashira (柱) — MCP server scaffold";
+  description = "Hashira (柱) — MCP server scaffold: tool registry, response helpers, and rmcp boilerplate";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
-    substrate = {
-      url = "github:pleme-io/substrate";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   outputs =
     {
       self,
       nixpkgs,
-      substrate,
       ...
     }:
     let
