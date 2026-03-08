@@ -1,11 +1,11 @@
 [package]
-name = "hashira"
+name = "kaname"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.89.0"
-description = "Hashira (柱) — MCP server scaffold: tool registry, response helpers, and rmcp boilerplate"
-homepage = "https://github.com/pleme-io/hashira"
-repository = "https://github.com/pleme-io/hashira"
+description = "Kaname (要) — MCP server scaffold: tool registry, response helpers, and rmcp boilerplate"
+homepage = "https://github.com/pleme-io/kaname"
+repository = "https://github.com/pleme-io/kaname"
 readme = "README.md"
 license = "MIT"
 categories = ["development-tools"]

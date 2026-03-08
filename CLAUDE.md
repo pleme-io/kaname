@@ -1,4 +1,4 @@
-# Hashira (柱) -- MCP Server Scaffold
+# Kaname (要) -- MCP Server Scaffold
 
 ## Build & Test
 
@@ -29,7 +29,7 @@ Extracts the common MCP server boilerplate from karakuri and hikyaku into reusab
 ### Usage Pattern
 
 ```rust
-use hashira::{ToolRegistry, ToolResponse, McpServerInfo};
+use kaname::{ToolRegistry, ToolResponse, McpServerInfo};
 
 let info = McpServerInfo::new("my-server", "0.1.0", "Does things");
 

@@ -39,7 +39,7 @@ rec {
   #
 
   rootCrate = rec {
-    packageId = "hashira";
+    packageId = "kaname";
 
     # Use this attribute to refer to the derivation building your root crate package.
     # You can override the features with rootCrate.build.override { features = [ "default" "feature1" ... ]; }.
@@ -55,10 +55,10 @@ rec {
   # You can override the features with
   # workspaceMembers."${crateName}".build.override { features = [ "default" "feature1" ... ]; }.
   workspaceMembers = {
-    "hashira" = rec {
-      packageId = "hashira";
+    "kaname" = rec {
+      packageId = "kaname";
       build = internal.buildRustCrateWithFeatures {
-        packageId = "hashira";
+        packageId = "kaname";
       };
 
       # Debug support which might change between releases.
@@ -695,46 +695,6 @@ rec {
         };
         resolvedDefaultFeatures = [ "alloc" "async-await" "async-await-macro" "channel" "futures-channel" "futures-io" "futures-macro" "futures-sink" "io" "memchr" "sink" "slab" "std" ];
       };
-      "hashira" = rec {
-        crateName = "hashira";
-        version = "0.1.0";
-        edition = "2024";
-        src = lib.cleanSourceWith { filter = sourceFilter;  src = ./.; };
-        dependencies = [
-          {
-            name = "rmcp";
-            packageId = "rmcp";
-            features = [ "server" "transport-io" ];
-          }
-          {
-            name = "schemars";
-            packageId = "schemars 0.8.22";
-          }
-          {
-            name = "serde";
-            packageId = "serde";
-            features = [ "derive" ];
-          }
-          {
-            name = "serde_json";
-            packageId = "serde_json";
-          }
-          {
-            name = "thiserror";
-            packageId = "thiserror";
-          }
-          {
-            name = "tokio";
-            packageId = "tokio";
-            features = [ "rt-multi-thread" "macros" ];
-          }
-          {
-            name = "tracing";
-            packageId = "tracing";
-          }
-        ];
-
-      };
       "iana-time-zone" = rec {
         crateName = "iana-time-zone";
         version = "0.1.65";
@@ -852,6 +812,46 @@ rec {
           "std" = [ "wasm-bindgen/std" ];
         };
         resolvedDefaultFeatures = [ "default" "std" "unsafe-eval" ];
+      };
+      "kaname" = rec {
+        crateName = "kaname";
+        version = "0.1.0";
+        edition = "2024";
+        src = lib.cleanSourceWith { filter = sourceFilter;  src = ./.; };
+        dependencies = [
+          {
+            name = "rmcp";
+            packageId = "rmcp";
+            features = [ "server" "transport-io" ];
+          }
+          {
+            name = "schemars";
+            packageId = "schemars 0.8.22";
+          }
+          {
+            name = "serde";
+            packageId = "serde";
+            features = [ "derive" ];
+          }
+          {
+            name = "serde_json";
+            packageId = "serde_json";
+          }
+          {
+            name = "thiserror";
+            packageId = "thiserror";
+          }
+          {
+            name = "tokio";
+            packageId = "tokio";
+            features = [ "rt-multi-thread" "macros" ];
+          }
+          {
+            name = "tracing";
+            packageId = "tracing";
+          }
+        ];
+
       };
       "libc" = rec {
         crateName = "libc";

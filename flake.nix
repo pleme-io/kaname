@@ -1,5 +1,5 @@
 {
-  description = "Hashira (柱) — MCP server scaffold: tool registry, response helpers, and rmcp boilerplate";
+  description = "Kaname (要) — MCP server scaffold: tool registry, response helpers, and rmcp boilerplate";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
@@ -27,7 +27,7 @@
         inherit crate2nix;
       };
       lib = rustLibrary {
-        name = "hashira";
+        name = "kaname";
         src = ./.;
       };
     in
@@ -35,7 +35,7 @@
       inherit (lib) packages devShells apps;
 
       overlays.default = final: prev: {
-        hashira = self.packages.${final.system}.default;
+        kaname = self.packages.${final.system}.default;
       };
 
       formatter.${system} = pkgs.nixfmt-tree;

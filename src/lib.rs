@@ -1,4 +1,4 @@
-//! Hashira (柱) --- MCP server scaffold.
+//! Kaname (要) --- MCP server scaffold.
 //!
 //! Extracts the common boilerplate from karakuri and hikyaku's MCP servers:
 //! tool registration, response formatting, and rmcp type re-exports.
@@ -6,7 +6,7 @@
 //! # Quick Start
 //!
 //! ```rust,ignore
-//! use hashira::{ToolRegistry, ToolResponse, McpServerInfo};
+//! use kaname::{ToolRegistry, ToolResponse, McpServerInfo};
 //!
 //! let info = McpServerInfo::new("my-server", "0.1.0", "Does things");
 //!
