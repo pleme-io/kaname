@@ -4,7 +4,7 @@
 
 ```bash
 cargo build          # compile
-cargo test           # 25 unit tests
+cargo test           # 71 unit tests
 ```
 
 ## Architecture
@@ -16,8 +16,8 @@ Extracts the common MCP server boilerplate from ayatsuri and hikyaku into reusab
 | Path | Purpose |
 |------|---------|
 | `src/lib.rs` | Re-exports + rmcp/schemars re-exports |
-| `src/server.rs` | `McpServerInfo`, `McpTool`, `ToolRegistry` (25 tests) |
-| `src/response.rs` | `ToolResponse` -- success/error/text helpers wrapping `CallToolResult` |
+| `src/server.rs` | `McpServerInfo`, `McpTool`, `ToolRegistry` (36 tests) |
+| `src/response.rs` | `ToolResponse` -- success/error/text helpers wrapping `CallToolResult` (35 tests) |
 
 ### Key Types
 

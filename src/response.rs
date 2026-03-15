@@ -162,4 +162,190 @@ mod tests {
         assert!(!compact_text.contains('\n'));
         assert!(pretty_text.contains('\n'));
     }
+
+    // --- ToolResponse::success edge cases ---
+
+    #[test]
+    fn success_with_null_value() {
+        let result = ToolResponse::success(&json!(null));
+        assert_eq!(first_text(&result), "null");
+        assert_eq!(result.is_error, Some(false));
+    }
+
+    #[test]
+    fn success_with_boolean_value() {
+        let result = ToolResponse::success(&json!(true));
+        assert_eq!(first_text(&result), "true");
+    }
+
+    #[test]
+    fn success_with_string_value() {
+        let result = ToolResponse::success(&json!("hello world"));
+        assert_eq!(first_text(&result), r#""hello world""#);
+    }
+
+    #[test]
+    fn success_with_number_value() {
+        let result = ToolResponse::success(&json!(3.14));
+        assert_eq!(first_text(&result), "3.14");
+    }
+
+    #[test]
+    fn success_with_empty_object() {
+        let result = ToolResponse::success(&json!({}));
+        assert_eq!(first_text(&result), "{}");
+    }
+
+    #[test]
+    fn success_with_empty_array() {
+        let result = ToolResponse::success(&json!([]));
+        assert_eq!(first_text(&result), "[]");
+    }
+
+    #[test]
+    fn success_with_deeply_nested_object() {
+        let value = json!({"a": {"b": {"c": {"d": 42}}}});
+        let result = ToolResponse::success(&value);
+        // Compact serialisation -- no whitespace between structural chars.
+        let text = first_text(&result);
+        assert!(!text.contains(' '));
+        assert!(text.contains("42"));
+    }
+
+    // --- structural invariants ---
+
+    #[test]
+    fn success_has_exactly_one_content_block() {
+        let result = ToolResponse::success(&json!({"k": "v"}));
+        assert_eq!(result.content.len(), 1);
+    }
+
+    #[test]
+    fn error_has_exactly_one_content_block() {
+        let result = ToolResponse::error("oops");
+        assert_eq!(result.content.len(), 1);
+    }
+
+    #[test]
+    fn text_has_exactly_one_content_block() {
+        let result = ToolResponse::text("msg");
+        assert_eq!(result.content.len(), 1);
+    }
+
+    #[test]
+    fn json_text_has_exactly_one_content_block() {
+        let result = ToolResponse::json_text(&json!({"k": 1}));
+        assert_eq!(result.content.len(), 1);
+    }
+
+    #[test]
+    fn success_has_no_structured_content() {
+        let result = ToolResponse::success(&json!({}));
+        assert!(result.structured_content.is_none());
+    }
+
+    #[test]
+    fn error_has_no_structured_content() {
+        let result = ToolResponse::error("err");
+        assert!(result.structured_content.is_none());
+    }
+
+    #[test]
+    fn text_has_no_structured_content() {
+        let result = ToolResponse::text("t");
+        assert!(result.structured_content.is_none());
+    }
+
+    #[test]
+    fn success_has_no_meta() {
+        let result = ToolResponse::success(&json!({}));
+        assert!(result.meta.is_none());
+    }
+
+    #[test]
+    fn error_has_no_meta() {
+        let result = ToolResponse::error("err");
+        assert!(result.meta.is_none());
+    }
+
+    // --- ToolResponse::error edge cases ---
+
+    #[test]
+    fn error_with_empty_string() {
+        let result = ToolResponse::error("");
+        assert_eq!(first_text(&result), "");
+        assert_eq!(result.is_error, Some(true));
+    }
+
+    #[test]
+    fn error_with_multiline_message() {
+        let result = ToolResponse::error("line1\nline2\nline3");
+        assert_eq!(first_text(&result), "line1\nline2\nline3");
+    }
+
+    #[test]
+    fn error_with_unicode_message() {
+        let result = ToolResponse::error("fehler: ungueltige eingabe \u{00e4}\u{00f6}\u{00fc}");
+        assert!(first_text(&result).contains('\u{00e4}'));
+        assert_eq!(result.is_error, Some(true));
+    }
+
+    // --- ToolResponse::text edge cases ---
+
+    #[test]
+    fn text_with_empty_string() {
+        let result = ToolResponse::text("");
+        assert_eq!(first_text(&result), "");
+        assert_eq!(result.is_error, Some(false));
+    }
+
+    #[test]
+    fn text_preserves_whitespace() {
+        let result = ToolResponse::text("  leading and trailing  ");
+        assert_eq!(first_text(&result), "  leading and trailing  ");
+    }
+
+    // --- ToolResponse::json_text edge cases ---
+
+    #[test]
+    fn json_text_with_array() {
+        let value = json!([1, "two", null, true]);
+        let result = ToolResponse::json_text(&value);
+        let expected = serde_json::to_string_pretty(&value).unwrap();
+        assert_eq!(first_text(&result), expected);
+    }
+
+    #[test]
+    fn json_text_with_scalar() {
+        // Even scalars should round-trip through pretty-print.
+        let result = ToolResponse::json_text(&json!(42));
+        assert_eq!(first_text(&result), "42");
+        assert_eq!(result.is_error, Some(false));
+    }
+
+    // --- cross-method consistency ---
+
+    #[test]
+    fn success_and_text_differ_for_json_looking_string() {
+        // success() wraps a JSON value; text() wraps a literal string.
+        let json_str = r#"{"key":"value"}"#;
+        let success_result = ToolResponse::success(&json!({"key": "value"}));
+        let text_result = ToolResponse::text(json_str);
+
+        // Both should produce the same text content.
+        assert_eq!(first_text(&success_result), first_text(&text_result));
+        // Both are non-error.
+        assert_eq!(success_result.is_error, text_result.is_error);
+    }
+
+    #[test]
+    fn error_and_text_share_same_text_but_differ_on_is_error() {
+        let msg = "some message";
+        let err = ToolResponse::error(msg);
+        let txt = ToolResponse::text(msg);
+
+        assert_eq!(first_text(&err), first_text(&txt));
+        assert_eq!(err.is_error, Some(true));
+        assert_eq!(txt.is_error, Some(false));
+    }
 }

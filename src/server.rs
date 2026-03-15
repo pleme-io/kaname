@@ -324,4 +324,254 @@ mod tests {
         let rmcp_schema = list[0].schema_as_json_value();
         assert_eq!(rmcp_schema, schema);
     }
+
+    // ---- McpServerInfo trait impls ----
+
+    #[test]
+    fn server_info_is_cloneable() {
+        let info = McpServerInfo::new("s", "1.0", "d");
+        let cloned = info.clone();
+        assert_eq!(cloned.name, "s");
+        assert_eq!(cloned.version, "1.0");
+        assert_eq!(cloned.description, "d");
+    }
+
+    #[test]
+    fn server_info_debug_contains_fields() {
+        let info = McpServerInfo::new("myserver", "2.0.0", "my desc");
+        let debug = format!("{info:?}");
+        assert!(debug.contains("myserver"));
+        assert!(debug.contains("2.0.0"));
+        assert!(debug.contains("my desc"));
+    }
+
+    #[test]
+    fn server_info_with_empty_strings() {
+        let info = McpServerInfo::new("", "", "");
+        assert_eq!(info.name, "");
+        assert_eq!(info.version, "");
+        assert_eq!(info.description, "");
+    }
+
+    #[test]
+    fn server_info_with_unicode() {
+        let info = McpServerInfo::new(
+            "\u{8981}",         // kanji for "kaname"
+            "0.1.0",
+            "\u{30b5}\u{30fc}\u{30d0}\u{30fc}", // "server" in katakana
+        );
+        assert_eq!(info.name, "\u{8981}");
+        assert_eq!(info.description, "\u{30b5}\u{30fc}\u{30d0}\u{30fc}");
+    }
+
+    // ---- McpTool ----
+
+    #[test]
+    fn mcp_tool_debug_contains_name() {
+        let mut registry = ToolRegistry::new();
+        registry.register("dbg_tool", "Debug test", json!({}));
+        let tool = registry.get("dbg_tool").unwrap();
+        let debug = format!("{tool:?}");
+        assert!(debug.contains("dbg_tool"));
+    }
+
+    #[test]
+    fn mcp_tool_clone_is_independent() {
+        let mut registry = ToolRegistry::new();
+        registry.register("orig", "Original", json!({"type": "object"}));
+        let tool = registry.get("orig").unwrap().clone();
+        // Mutate registry; cloned tool is unaffected.
+        registry.register("orig", "Replaced", json!({}));
+        assert_eq!(tool.description, "Original");
+    }
+
+    // ---- ToolRegistry: Default ----
+
+    #[test]
+    fn default_registry_equals_new() {
+        let from_new = ToolRegistry::new();
+        let from_default = ToolRegistry::default();
+        assert_eq!(from_new.len(), from_default.len());
+        assert!(from_default.is_empty());
+    }
+
+    // ---- ToolRegistry: Clone ----
+
+    #[test]
+    fn cloned_registry_is_independent() {
+        let mut original = ToolRegistry::new();
+        original.register("a", "A", json!({}));
+        let cloned = original.clone();
+
+        // Mutate original -- clone should be unaffected.
+        original.register("b", "B", json!({}));
+        assert_eq!(cloned.len(), 1);
+        assert_eq!(original.len(), 2);
+    }
+
+    #[test]
+    fn cloned_registry_preserves_order() {
+        let mut registry = ToolRegistry::new();
+        registry.register("x", "X", json!({}));
+        registry.register("y", "Y", json!({}));
+        let cloned = registry.clone();
+        let names: Vec<&str> = cloned.tools().iter().map(|t| t.name.as_str()).collect();
+        assert_eq!(names, vec!["x", "y"]);
+    }
+
+    // ---- ToolRegistry: Debug ----
+
+    #[test]
+    fn registry_debug_does_not_panic() {
+        let mut registry = ToolRegistry::new();
+        registry.register("tool1", "T1", json!({"type": "object"}));
+        let debug = format!("{registry:?}");
+        assert!(debug.contains("tool1"));
+    }
+
+    // ---- ToolRegistry: multiple overwrites ----
+
+    #[test]
+    fn triple_overwrite_keeps_single_entry() {
+        let mut registry = ToolRegistry::new();
+        registry.register("tool", "v1", json!({"v": 1}));
+        registry.register("tool", "v2", json!({"v": 2}));
+        registry.register("tool", "v3", json!({"v": 3}));
+
+        assert_eq!(registry.len(), 1);
+        let tool = registry.get("tool").unwrap();
+        assert_eq!(tool.description, "v3");
+        assert_eq!(tool.schema, json!({"v": 3}));
+    }
+
+    // ---- ToolRegistry: empty name / description ----
+
+    #[test]
+    fn register_with_empty_name() {
+        let mut registry = ToolRegistry::new();
+        registry.register("", "Empty name tool", json!({}));
+        assert_eq!(registry.len(), 1);
+        let tool = registry.get("").unwrap();
+        assert_eq!(tool.name, "");
+    }
+
+    #[test]
+    fn register_with_empty_description() {
+        let mut registry = ToolRegistry::new();
+        registry.register("tool", "", json!({}));
+        let tool = registry.get("tool").unwrap();
+        assert_eq!(tool.description, "");
+    }
+
+    // ---- to_tool_list: non-object schema wrapping ----
+
+    #[test]
+    fn to_tool_list_wraps_non_object_schema_as_properties() {
+        // When the schema is not a JSON object (e.g., an array or string),
+        // to_tool_list should wrap it in a {"type":"object","properties": ...} envelope.
+        let mut registry = ToolRegistry::new();
+        registry.register("weird", "Weird schema", json!("not an object"));
+
+        let list = registry.to_tool_list();
+        let schema = list[0].schema_as_json_value();
+        assert_eq!(schema["type"], "object");
+        assert_eq!(schema["properties"], json!("not an object"));
+    }
+
+    #[test]
+    fn to_tool_list_wraps_array_schema() {
+        let mut registry = ToolRegistry::new();
+        registry.register("arr", "Array schema", json!([1, 2, 3]));
+
+        let list = registry.to_tool_list();
+        let schema = list[0].schema_as_json_value();
+        assert_eq!(schema["type"], "object");
+        assert_eq!(schema["properties"], json!([1, 2, 3]));
+    }
+
+    #[test]
+    fn to_tool_list_wraps_null_schema() {
+        let mut registry = ToolRegistry::new();
+        registry.register("nul", "Null schema", json!(null));
+
+        let list = registry.to_tool_list();
+        let schema = list[0].schema_as_json_value();
+        assert_eq!(schema["type"], "object");
+        assert_eq!(schema["properties"], json!(null));
+    }
+
+    #[test]
+    fn to_tool_list_passes_through_object_schema_with_extra_fields() {
+        // An object schema with additional fields (required, additionalProperties)
+        // should be preserved as-is.
+        let schema = json!({
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+                "name": { "type": "string" }
+            },
+            "additionalProperties": false
+        });
+        let mut registry = ToolRegistry::new();
+        registry.register("strict", "Strict schema", schema.clone());
+
+        let list = registry.to_tool_list();
+        let rmcp_schema = list[0].schema_as_json_value();
+        assert_eq!(rmcp_schema, schema);
+    }
+
+    // ---- to_tool_list: tool description ----
+
+    #[test]
+    fn to_tool_list_carries_description() {
+        let mut registry = ToolRegistry::new();
+        registry.register("desc_test", "A detailed description", json!({"type": "object"}));
+        let list = registry.to_tool_list();
+        assert_eq!(
+            list[0].description.as_deref(),
+            Some("A detailed description")
+        );
+    }
+
+    // ---- to_tool_list: large registry ----
+
+    #[test]
+    fn to_tool_list_handles_many_tools() {
+        let mut registry = ToolRegistry::new();
+        for i in 0..100 {
+            registry.register(
+                format!("tool_{i}"),
+                format!("Tool number {i}"),
+                json!({"type": "object"}),
+            );
+        }
+        let list = registry.to_tool_list();
+        assert_eq!(list.len(), 100);
+        // First and last should be in order.
+        assert_eq!(list[0].name.as_ref(), "tool_0");
+        assert_eq!(list[99].name.as_ref(), "tool_99");
+    }
+
+    // ---- get after overwrite ----
+
+    #[test]
+    fn get_returns_latest_after_overwrite() {
+        let mut registry = ToolRegistry::new();
+        registry.register("t", "old", json!({"old": true}));
+        registry.register("t", "new", json!({"new": true}));
+        let tool = registry.get("t").unwrap();
+        assert_eq!(tool.description, "new");
+        assert_eq!(tool.schema, json!({"new": true}));
+    }
+
+    // ---- tools() with single entry ----
+
+    #[test]
+    fn tools_returns_single_entry_correctly() {
+        let mut registry = ToolRegistry::new();
+        registry.register("only", "The only one", json!({"type": "object"}));
+        let tools = registry.tools();
+        assert_eq!(tools.len(), 1);
+        assert_eq!(tools[0].name, "only");
+    }
 }
