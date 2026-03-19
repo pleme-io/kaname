@@ -22,9 +22,11 @@
 //! let text = ToolResponse::text("plain output");
 //! ```
 
+pub mod config_tools;
 mod response;
 mod server;
 
+pub use config_tools::{register_config_tools, ConfigGetInput, ConfigHandler, ConfigSetInput, StatusInput};
 pub use response::ToolResponse;
 pub use server::{McpServerInfo, McpTool, ToolRegistry};
 
