@@ -2,7 +2,7 @@
   description = "Kaname (要) — MCP server scaffold: tool registry, response helpers, and rmcp boilerplate";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-25.11";
     substrate = {
       url = "github:pleme-io/substrate";
       inputs.nixpkgs.follows = "nixpkgs";
