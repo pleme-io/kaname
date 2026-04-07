@@ -2,6 +2,7 @@
 
 /// Errors that can occur in kaname MCP server operations.
 #[derive(Debug, thiserror::Error)]
+#[non_exhaustive]
 pub enum KanameError {
     /// A requested configuration key was not found.
     #[error("config key not found: {key}")]
@@ -97,5 +98,17 @@ mod tests {
             Err(std::io::Error::new(std::io::ErrorKind::Other, "boom"))?
         }
         assert!(try_io().is_err());
+    }
+
+    #[test]
+    fn error_is_non_exhaustive() {
+        fn _assert_match(e: KanameError) -> String {
+            match e {
+                KanameError::ConfigKeyNotFound { key } => key,
+                KanameError::Json(e) => e.to_string(),
+                KanameError::Io(e) => e.to_string(),
+                _ => "unknown".to_string(),
+            }
+        }
     }
 }
