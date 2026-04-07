@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use std::sync::Arc;
 
 /// Metadata describing an MCP server.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct McpServerInfo {
     /// Human-readable server name (e.g. `"hikyaku"`).
     pub name: String,
@@ -35,7 +35,7 @@ impl std::fmt::Display for McpServerInfo {
 }
 
 /// A single MCP tool definition with its JSON Schema.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct McpTool {
     /// Unique tool name used for dispatch (e.g. `"config_get"`).
     pub name: String,
@@ -94,12 +94,18 @@ impl ToolRegistry {
         description: impl Into<String>,
         schema: serde_json::Value,
     ) {
-        let name = name.into();
-        if !self.tools.contains_key(&name) {
-            self.insertion_order.push(name.clone());
+        self.register_tool(McpTool::new(name, description, schema));
+    }
+
+    /// Register a pre-built [`McpTool`].
+    ///
+    /// If a tool with the same name already exists, it is replaced
+    /// (the insertion-order position is preserved).
+    pub fn register_tool(&mut self, tool: McpTool) {
+        if !self.tools.contains_key(&tool.name) {
+            self.insertion_order.push(tool.name.clone());
         }
-        let tool = McpTool::new(name.clone(), description, schema);
-        self.tools.insert(name, tool);
+        self.tools.insert(tool.name.clone(), tool);
     }
 
     /// Get all registered tools in insertion order.
@@ -194,6 +200,56 @@ mod tests {
             String::from("owned desc"),
         );
         assert_eq!(info.name, "owned");
+    }
+
+    // ---- PartialEq ----
+
+    #[test]
+    fn server_info_equality() {
+        let a = McpServerInfo::new("s", "1.0", "desc");
+        let b = McpServerInfo::new("s", "1.0", "desc");
+        assert_eq!(a, b);
+    }
+
+    #[test]
+    fn server_info_inequality() {
+        let a = McpServerInfo::new("s", "1.0", "desc");
+        let b = McpServerInfo::new("s", "2.0", "desc");
+        assert_ne!(a, b);
+    }
+
+    #[test]
+    fn mcp_tool_equality() {
+        let a = McpTool::new("t", "d", json!({}));
+        let b = McpTool::new("t", "d", json!({}));
+        assert_eq!(a, b);
+    }
+
+    #[test]
+    fn mcp_tool_inequality_on_schema() {
+        let a = McpTool::new("t", "d", json!({"a": 1}));
+        let b = McpTool::new("t", "d", json!({"b": 2}));
+        assert_ne!(a, b);
+    }
+
+    // ---- register_tool ----
+
+    #[test]
+    fn register_tool_adds_prebuilt() {
+        let mut registry = ToolRegistry::new();
+        let tool = McpTool::new("pre", "Prebuilt", json!({"type": "object"}));
+        registry.register_tool(tool);
+        assert_eq!(registry.len(), 1);
+        assert_eq!(registry.get("pre").unwrap().description, "Prebuilt");
+    }
+
+    #[test]
+    fn register_tool_overwrites_existing() {
+        let mut registry = ToolRegistry::new();
+        registry.register_tool(McpTool::new("x", "v1", json!({})));
+        registry.register_tool(McpTool::new("x", "v2", json!({})));
+        assert_eq!(registry.len(), 1);
+        assert_eq!(registry.get("x").unwrap().description, "v2");
     }
 
     // ---- ToolRegistry basics ----
