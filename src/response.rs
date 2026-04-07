@@ -91,7 +91,7 @@ pub fn json_ok(value: &impl serde::Serialize) -> Result<CallToolResult, crate::K
 /// Shorthand for `ToolResponse::error(&e.to_string())`.
 #[must_use]
 pub fn json_err(error: &impl std::fmt::Display) -> CallToolResult {
-    ToolResponse::error(&error.to_string())
+    ToolResponse::error(error.to_string())
 }
 
 /// Convert a `Result<T, E>` into a [`CallToolResult`].
