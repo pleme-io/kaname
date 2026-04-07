@@ -105,10 +105,7 @@ impl ToolRegistry {
     /// Get all registered tools in insertion order.
     #[must_use]
     pub fn tools(&self) -> Vec<&McpTool> {
-        self.insertion_order
-            .iter()
-            .filter_map(|name| self.tools.get(name))
-            .collect()
+        self.iter().collect()
     }
 
     /// Look up a tool by name.
@@ -129,6 +126,24 @@ impl ToolRegistry {
         self.tools.is_empty()
     }
 
+    /// Return `true` if a tool with the given name is registered.
+    #[must_use]
+    pub fn contains(&self, name: &str) -> bool {
+        self.tools.contains_key(name)
+    }
+
+    /// Iterate over registered tools in insertion order.
+    pub fn iter(&self) -> impl Iterator<Item = &McpTool> {
+        self.insertion_order
+            .iter()
+            .filter_map(|name| self.tools.get(name))
+    }
+
+    /// Iterate over registered tool names in insertion order.
+    pub fn names(&self) -> impl Iterator<Item = &str> {
+        self.insertion_order.iter().map(String::as_str)
+    }
+
     /// Convert every registered tool into the rmcp [`Tool`](rmcp::model::Tool)
     /// type, preserving insertion order.
     ///
@@ -136,8 +151,7 @@ impl ToolRegistry {
     /// `ListToolsResult` during the MCP handshake.
     #[must_use]
     pub fn to_tool_list(&self) -> Vec<rmcp::model::Tool> {
-        self.tools()
-            .into_iter()
+        self.iter()
             .map(|t| {
                 let input_schema = match &t.schema {
                     serde_json::Value::Object(map) => Arc::new(map.clone()),
@@ -245,6 +259,55 @@ mod tests {
         assert!(registry.is_empty());
         registry.register("x", "X", json!({}));
         assert!(!registry.is_empty());
+    }
+
+    // ---- contains ----
+
+    #[test]
+    fn contains_returns_true_for_registered() {
+        let mut registry = ToolRegistry::new();
+        registry.register("alpha", "A", json!({}));
+        assert!(registry.contains("alpha"));
+    }
+
+    #[test]
+    fn contains_returns_false_for_missing() {
+        let registry = ToolRegistry::new();
+        assert!(!registry.contains("nope"));
+    }
+
+    // ---- iter ----
+
+    #[test]
+    fn iter_yields_tools_in_insertion_order() {
+        let mut registry = ToolRegistry::new();
+        registry.register("a", "A", json!({}));
+        registry.register("b", "B", json!({}));
+        let names: Vec<&str> = registry.iter().map(|t| t.name.as_str()).collect();
+        assert_eq!(names, vec!["a", "b"]);
+    }
+
+    #[test]
+    fn iter_on_empty_registry_yields_nothing() {
+        let registry = ToolRegistry::new();
+        assert_eq!(registry.iter().count(), 0);
+    }
+
+    // ---- names ----
+
+    #[test]
+    fn names_returns_insertion_order() {
+        let mut registry = ToolRegistry::new();
+        registry.register("z", "Z", json!({}));
+        registry.register("a", "A", json!({}));
+        let names: Vec<&str> = registry.names().collect();
+        assert_eq!(names, vec!["z", "a"]);
+    }
+
+    #[test]
+    fn names_on_empty_registry_yields_nothing() {
+        let registry = ToolRegistry::new();
+        assert_eq!(registry.names().count(), 0);
     }
 
     // ---- duplicate / overwrite ----
