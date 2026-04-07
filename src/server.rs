@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::sync::Arc;
 
 /// Metadata describing an MCP server.
@@ -39,7 +39,7 @@ pub struct McpTool {
 /// them for advertisement during the MCP `initialize` handshake.
 #[derive(Debug, Clone, Default)]
 pub struct ToolRegistry {
-    tools: HashMap<String, McpTool>,
+    tools: BTreeMap<String, McpTool>,
     insertion_order: Vec<String>,
 }
 
