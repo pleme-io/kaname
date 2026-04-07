@@ -57,6 +57,14 @@ impl ToolResponse {
         Ok(Self::success(&v))
     }
 
+    /// Build an error result from any [`Display`](std::fmt::Display) value.
+    ///
+    /// Convenience shorthand for `ToolResponse::error(&e.to_string())`.
+    #[must_use]
+    pub fn from_error(error: &impl std::fmt::Display) -> CallToolResult {
+        Self::error(error.to_string())
+    }
+
     /// Build a successful result with pretty-printed JSON as text.
     ///
     /// Unlike [`success`](Self::success), which produces compact JSON,
@@ -354,6 +362,31 @@ mod tests {
         let result = ToolResponse::json_text(&json!(42));
         assert_eq!(first_text(&result), "42");
         assert_eq!(result.is_error, Some(false));
+    }
+
+    // --- ToolResponse::from_error ---
+
+    #[test]
+    fn from_error_with_io_error() {
+        let io_err = std::io::Error::new(std::io::ErrorKind::NotFound, "not found");
+        let result = ToolResponse::from_error(&io_err);
+        assert_eq!(result.is_error, Some(true));
+        assert!(first_text(&result).contains("not found"));
+    }
+
+    #[test]
+    fn from_error_with_string() {
+        let result = ToolResponse::from_error(&"plain error");
+        assert_eq!(first_text(&result), "plain error");
+        assert_eq!(result.is_error, Some(true));
+    }
+
+    #[test]
+    fn from_error_matches_json_err() {
+        let msg = "something";
+        let from_method = ToolResponse::from_error(&msg);
+        let from_fn = json_err(&msg);
+        assert_eq!(first_text(&from_method), first_text(&from_fn));
     }
 
     // --- ToolResponse::from_serialize ---
