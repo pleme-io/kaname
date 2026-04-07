@@ -12,6 +12,16 @@ use rmcp::model::{CallToolResult, Content};
 pub struct ToolResponse;
 
 impl ToolResponse {
+    /// Build a [`CallToolResult`] with a single text content block.
+    fn build(text: impl Into<String>, is_error: bool) -> CallToolResult {
+        CallToolResult {
+            content: vec![Content::text(text.into())],
+            structured_content: None,
+            is_error: Some(is_error),
+            meta: None,
+        }
+    }
+
     /// Build a successful JSON result.
     ///
     /// The value is serialised with [`serde_json::to_string`] (compact)
@@ -19,34 +29,19 @@ impl ToolResponse {
     #[must_use]
     pub fn success(value: &serde_json::Value) -> CallToolResult {
         let text = serde_json::to_string(value).unwrap_or_else(|e| e.to_string());
-        CallToolResult {
-            content: vec![Content::text(text)],
-            structured_content: None,
-            is_error: Some(false),
-            meta: None,
-        }
+        Self::build(text, false)
     }
 
     /// Build an error result with a plain-text message.
     #[must_use]
     pub fn error(msg: &str) -> CallToolResult {
-        CallToolResult {
-            content: vec![Content::text(msg)],
-            structured_content: None,
-            is_error: Some(true),
-            meta: None,
-        }
+        Self::build(msg, true)
     }
 
     /// Build a successful result containing plain text.
     #[must_use]
     pub fn text(msg: &str) -> CallToolResult {
-        CallToolResult {
-            content: vec![Content::text(msg)],
-            structured_content: None,
-            is_error: Some(false),
-            meta: None,
-        }
+        Self::build(msg, false)
     }
 
     /// Build a successful result with pretty-printed JSON as text.
@@ -57,12 +52,7 @@ impl ToolResponse {
     #[must_use]
     pub fn json_text(value: &serde_json::Value) -> CallToolResult {
         let text = serde_json::to_string_pretty(value).unwrap_or_else(|e| e.to_string());
-        CallToolResult {
-            content: vec![Content::text(text)],
-            structured_content: None,
-            is_error: Some(false),
-            meta: None,
-        }
+        Self::build(text, false)
     }
 }
 
