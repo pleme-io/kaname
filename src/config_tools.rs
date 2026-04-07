@@ -103,13 +103,13 @@ pub fn register_config_tools(registry: &mut crate::ToolRegistry) {
 
 /// Trait for apps to implement config get/set logic.
 ///
-/// Enables mockable, testable config handling. Each GPU app implements this
-/// with its own configuration type (typically backed by shikumi).
+/// Enables mockable, testable config handling. Each pleme-io app implements
+/// this with its own configuration type (typically backed by shikumi).
 pub trait ConfigHandler: Send + Sync {
     /// Get a config value by key, or all config as JSON if key is `None`.
-    fn get(&self, key: Option<&str>) -> Result<serde_json::Value, String>;
+    fn get(&self, key: Option<&str>) -> Result<serde_json::Value, crate::KanameError>;
     /// Set a config value by key.
-    fn set(&mut self, key: &str, value: &str) -> Result<(), String>;
+    fn set(&mut self, key: &str, value: &str) -> Result<(), crate::KanameError>;
 }
 
 #[cfg(test)]
@@ -368,20 +368,19 @@ mod tests {
     }
 
     impl ConfigHandler for MockConfig {
-        fn get(&self, key: Option<&str>) -> Result<serde_json::Value, String> {
+        fn get(&self, key: Option<&str>) -> Result<serde_json::Value, crate::KanameError> {
             match key {
                 None => Ok(serde_json::Value::Object(self.data.clone())),
-                Some(k) => self
-                    .data
-                    .get(k)
-                    .cloned()
-                    .ok_or_else(|| format!("key not found: {k}")),
+                Some(k) => self.data.get(k).cloned().ok_or_else(|| {
+                    crate::KanameError::ConfigKeyNotFound {
+                        key: k.to_string(),
+                    }
+                }),
             }
         }
 
-        fn set(&mut self, key: &str, value: &str) -> Result<(), String> {
-            let parsed: serde_json::Value =
-                serde_json::from_str(value).map_err(|e| e.to_string())?;
+        fn set(&mut self, key: &str, value: &str) -> Result<(), crate::KanameError> {
+            let parsed: serde_json::Value = serde_json::from_str(value)?;
             self.data.insert(key.to_string(), parsed);
             Ok(())
         }
