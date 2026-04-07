@@ -44,6 +44,15 @@ impl ToolResponse {
         Self::build(msg.as_ref(), false)
     }
 
+    /// Build a successful result by serialising any [`Serialize`](serde::Serialize) value.
+    ///
+    /// Unlike [`success`](Self::success), which takes a pre-built `serde_json::Value`,
+    /// this method accepts any serialisable type directly.
+    pub fn from_serialize(value: &impl serde::Serialize) -> Result<CallToolResult, crate::KanameError> {
+        let v = serde_json::to_value(value)?;
+        Ok(Self::success(&v))
+    }
+
     /// Build a successful result with pretty-printed JSON as text.
     ///
     /// Unlike [`success`](Self::success), which produces compact JSON,
@@ -341,6 +350,31 @@ mod tests {
         let result = ToolResponse::json_text(&json!(42));
         assert_eq!(first_text(&result), "42");
         assert_eq!(result.is_error, Some(false));
+    }
+
+    // --- ToolResponse::from_serialize ---
+
+    #[test]
+    fn from_serialize_with_struct() {
+        #[derive(serde::Serialize)]
+        struct Info { name: String }
+        let result = ToolResponse::from_serialize(&Info { name: "test".into() }).unwrap();
+        assert_eq!(first_text(&result), r#"{"name":"test"}"#);
+        assert_eq!(result.is_error, Some(false));
+    }
+
+    #[test]
+    fn from_serialize_with_vec() {
+        let result = ToolResponse::from_serialize(&vec![1, 2, 3]).unwrap();
+        assert_eq!(first_text(&result), "[1,2,3]");
+    }
+
+    #[test]
+    fn from_serialize_matches_json_ok() {
+        let v = json!({"a": 1});
+        let from_serialize = ToolResponse::from_serialize(&v).unwrap();
+        let from_ok = json_ok(&v).unwrap();
+        assert_eq!(first_text(&from_serialize), first_text(&from_ok));
     }
 
     // --- AsRef<str> acceptance ---
