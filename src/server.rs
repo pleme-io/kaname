@@ -151,20 +151,22 @@ impl ToolRegistry {
     /// `ListToolsResult` during the MCP handshake.
     #[must_use]
     pub fn to_tool_list(&self) -> Vec<rmcp::model::Tool> {
-        self.iter()
-            .map(|t| {
-                let input_schema = match &t.schema {
-                    serde_json::Value::Object(map) => Arc::new(map.clone()),
-                    other => {
-                        let mut map = serde_json::Map::new();
-                        map.insert("type".to_string(), serde_json::json!("object"));
-                        map.insert("properties".to_string(), other.clone());
-                        Arc::new(map)
-                    }
-                };
-                rmcp::model::Tool::new(t.name.clone(), t.description.clone(), input_schema)
-            })
-            .collect()
+        self.iter().map(rmcp::model::Tool::from).collect()
+    }
+}
+
+impl From<&McpTool> for rmcp::model::Tool {
+    fn from(tool: &McpTool) -> Self {
+        let input_schema = match &tool.schema {
+            serde_json::Value::Object(map) => Arc::new(map.clone()),
+            other => {
+                let mut map = serde_json::Map::new();
+                map.insert("type".to_string(), serde_json::json!("object"));
+                map.insert("properties".to_string(), other.clone());
+                Arc::new(map)
+            }
+        };
+        Self::new(tool.name.clone(), tool.description.clone(), input_schema)
     }
 }
 
@@ -679,6 +681,33 @@ mod tests {
         // First and last should be in order.
         assert_eq!(list[0].name.as_ref(), "tool_0");
         assert_eq!(list[99].name.as_ref(), "tool_99");
+    }
+
+    // ---- From<&McpTool> for rmcp::model::Tool ----
+
+    #[test]
+    fn from_mcp_tool_preserves_name_and_description() {
+        let tool = McpTool::new("search", "Search things", json!({"type": "object"}));
+        let rmcp_tool = rmcp::model::Tool::from(&tool);
+        assert_eq!(rmcp_tool.name.as_ref(), "search");
+        assert_eq!(rmcp_tool.description.as_deref(), Some("Search things"));
+    }
+
+    #[test]
+    fn from_mcp_tool_preserves_object_schema() {
+        let schema = json!({"type": "object", "properties": {"q": {"type": "string"}}});
+        let tool = McpTool::new("s", "S", schema.clone());
+        let rmcp_tool = rmcp::model::Tool::from(&tool);
+        assert_eq!(rmcp_tool.schema_as_json_value(), schema);
+    }
+
+    #[test]
+    fn from_mcp_tool_wraps_non_object_schema() {
+        let tool = McpTool::new("w", "W", json!("not an object"));
+        let rmcp_tool = rmcp::model::Tool::from(&tool);
+        let schema = rmcp_tool.schema_as_json_value();
+        assert_eq!(schema["type"], "object");
+        assert_eq!(schema["properties"], json!("not an object"));
     }
 
     // ---- get after overwrite ----
