@@ -368,4 +368,122 @@ mod tests {
         assert_eq!(err.is_error, Some(true));
         assert_eq!(txt.is_error, Some(false));
     }
+
+    // --- json_ok ---
+
+    #[test]
+    fn json_ok_with_object() {
+        let result = json_ok(&json!({"status": "ok"})).unwrap();
+        assert_eq!(result.is_error, Some(false));
+        assert_eq!(first_text(&result), r#"{"status":"ok"}"#);
+    }
+
+    #[test]
+    fn json_ok_with_typed_struct() {
+        #[derive(serde::Serialize)]
+        struct Greeting {
+            message: String,
+        }
+        let g = Greeting {
+            message: "hi".to_string(),
+        };
+        let result = json_ok(&g).unwrap();
+        assert_eq!(first_text(&result), r#"{"message":"hi"}"#);
+        assert_eq!(result.is_error, Some(false));
+    }
+
+    #[test]
+    fn json_ok_with_scalar() {
+        let result = json_ok(&42_i32).unwrap();
+        assert_eq!(first_text(&result), "42");
+    }
+
+    #[test]
+    fn json_ok_with_vec() {
+        let result = json_ok(&vec![1, 2, 3]).unwrap();
+        assert_eq!(first_text(&result), "[1,2,3]");
+    }
+
+    #[test]
+    fn json_ok_matches_success_for_json_values() {
+        let v = json!({"a": 1});
+        let from_ok = json_ok(&v).unwrap();
+        let from_success = ToolResponse::success(&v);
+        assert_eq!(first_text(&from_ok), first_text(&from_success));
+        assert_eq!(from_ok.is_error, from_success.is_error);
+    }
+
+    // --- json_err ---
+
+    #[test]
+    fn json_err_marks_as_error() {
+        let result = json_err(&"bad input");
+        assert_eq!(result.is_error, Some(true));
+        assert_eq!(first_text(&result), "bad input");
+    }
+
+    #[test]
+    fn json_err_with_error_type() {
+        let io_err = std::io::Error::new(std::io::ErrorKind::NotFound, "not found");
+        let result = json_err(&io_err);
+        assert_eq!(result.is_error, Some(true));
+        assert!(first_text(&result).contains("not found"));
+    }
+
+    #[test]
+    fn json_err_with_kaname_error() {
+        let err = crate::KanameError::ConfigKeyNotFound {
+            key: "missing".to_string(),
+        };
+        let result = json_err(&err);
+        assert_eq!(result.is_error, Some(true));
+        assert!(first_text(&result).contains("missing"));
+    }
+
+    #[test]
+    fn json_err_matches_error_for_strings() {
+        let msg = "something broke";
+        let from_err_fn = json_err(&msg);
+        let from_method = ToolResponse::error(msg);
+        assert_eq!(first_text(&from_err_fn), first_text(&from_method));
+        assert_eq!(from_err_fn.is_error, from_method.is_error);
+    }
+
+    // --- json_result ---
+
+    #[test]
+    fn json_result_ok_path() {
+        let r: Result<_, String> = Ok(json!({"x": 1}));
+        let result = json_result(r).unwrap();
+        assert_eq!(result.is_error, Some(false));
+        assert_eq!(first_text(&result), r#"{"x":1}"#);
+    }
+
+    #[test]
+    fn json_result_err_path() {
+        let r: Result<serde_json::Value, _> = Err("boom");
+        let result = json_result(r).unwrap();
+        assert_eq!(result.is_error, Some(true));
+        assert_eq!(first_text(&result), "boom");
+    }
+
+    #[test]
+    fn json_result_with_typed_ok() {
+        #[derive(serde::Serialize)]
+        struct Count {
+            n: u32,
+        }
+        let r: Result<Count, String> = Ok(Count { n: 5 });
+        let result = json_result(r).unwrap();
+        assert_eq!(first_text(&result), r#"{"n":5}"#);
+    }
+
+    #[test]
+    fn json_result_with_io_error() {
+        let r: Result<i32, std::io::Error> =
+            Err(std::io::Error::new(std::io::ErrorKind::Other, "disk full"));
+        let result = json_result(r).unwrap();
+        assert_eq!(result.is_error, Some(true));
+        assert!(first_text(&result).contains("disk full"));
+    }
 }
