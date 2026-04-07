@@ -4,8 +4,11 @@ use std::sync::Arc;
 /// Metadata describing an MCP server.
 #[derive(Debug, Clone)]
 pub struct McpServerInfo {
+    /// Human-readable server name (e.g. `"hikyaku"`).
     pub name: String,
+    /// SemVer version string (e.g. `"0.1.0"`).
     pub version: String,
+    /// One-line description of the server's purpose.
     pub description: String,
 }
 
@@ -28,8 +31,11 @@ impl McpServerInfo {
 /// A single MCP tool definition with its JSON Schema.
 #[derive(Debug, Clone)]
 pub struct McpTool {
+    /// Unique tool name used for dispatch (e.g. `"config_get"`).
     pub name: String,
+    /// Human-readable description shown to MCP clients.
     pub description: String,
+    /// JSON Schema describing the tool's expected input.
     pub schema: serde_json::Value,
 }
 
