@@ -45,6 +45,28 @@ pub struct McpTool {
     pub schema: serde_json::Value,
 }
 
+impl McpTool {
+    /// Create a new tool definition.
+    #[must_use]
+    pub fn new(
+        name: impl Into<String>,
+        description: impl Into<String>,
+        schema: serde_json::Value,
+    ) -> Self {
+        Self {
+            name: name.into(),
+            description: description.into(),
+            schema,
+        }
+    }
+}
+
+impl std::fmt::Display for McpTool {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}: {}", self.name, self.description)
+    }
+}
+
 /// A registry that collects MCP tool definitions.
 ///
 /// Use this to declare all tools a server supports, then retrieve
@@ -76,14 +98,8 @@ impl ToolRegistry {
         if !self.tools.contains_key(&name) {
             self.insertion_order.push(name.clone());
         }
-        self.tools.insert(
-            name.clone(),
-            McpTool {
-                name,
-                description: description.into(),
-                schema,
-            },
-        );
+        let tool = McpTool::new(name.clone(), description, schema);
+        self.tools.insert(name, tool);
     }
 
     /// Get all registered tools in insertion order.
@@ -388,7 +404,33 @@ mod tests {
         assert_eq!(info.description, "\u{30b5}\u{30fc}\u{30d0}\u{30fc}");
     }
 
-    // ---- McpTool ----
+    // ---- McpTool::new ----
+
+    #[test]
+    fn mcp_tool_new_stores_fields() {
+        let tool = McpTool::new("search", "Search things", json!({"type": "object"}));
+        assert_eq!(tool.name, "search");
+        assert_eq!(tool.description, "Search things");
+        assert_eq!(tool.schema, json!({"type": "object"}));
+    }
+
+    #[test]
+    fn mcp_tool_new_accepts_owned_strings() {
+        let tool = McpTool::new(
+            String::from("owned"),
+            String::from("desc"),
+            json!({}),
+        );
+        assert_eq!(tool.name, "owned");
+    }
+
+    #[test]
+    fn mcp_tool_display_format() {
+        let tool = McpTool::new("config_get", "Get configuration", json!({}));
+        assert_eq!(tool.to_string(), "config_get: Get configuration");
+    }
+
+    // ---- McpTool trait impls ----
 
     #[test]
     fn mcp_tool_debug_contains_name() {
