@@ -28,6 +28,12 @@ impl McpServerInfo {
     }
 }
 
+impl std::fmt::Display for McpServerInfo {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} v{}", self.name, self.version)
+    }
+}
+
 /// A single MCP tool definition with its JSON Schema.
 #[derive(Debug, Clone)]
 pub struct McpTool {
@@ -349,6 +355,18 @@ mod tests {
         assert!(debug.contains("myserver"));
         assert!(debug.contains("2.0.0"));
         assert!(debug.contains("my desc"));
+    }
+
+    #[test]
+    fn server_info_display_format() {
+        let info = McpServerInfo::new("hikyaku", "0.3.1", "email client");
+        assert_eq!(info.to_string(), "hikyaku v0.3.1");
+    }
+
+    #[test]
+    fn server_info_display_with_empty_name() {
+        let info = McpServerInfo::new("", "1.0.0", "");
+        assert_eq!(info.to_string(), " v1.0.0");
     }
 
     #[test]
