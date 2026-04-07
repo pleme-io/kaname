@@ -161,6 +161,15 @@ impl ToolRegistry {
     }
 }
 
+impl<'a> IntoIterator for &'a ToolRegistry {
+    type Item = &'a McpTool;
+    type IntoIter = std::vec::IntoIter<&'a McpTool>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.tools().into_iter()
+    }
+}
+
 impl From<&McpTool> for rmcp::model::Tool {
     fn from(tool: &McpTool) -> Self {
         let input_schema = match &tool.schema {
@@ -737,6 +746,27 @@ mod tests {
         // First and last should be in order.
         assert_eq!(list[0].name.as_ref(), "tool_0");
         assert_eq!(list[99].name.as_ref(), "tool_99");
+    }
+
+    // ---- IntoIterator for &ToolRegistry ----
+
+    #[test]
+    fn into_iterator_for_loop() {
+        let mut registry = ToolRegistry::new();
+        registry.register("a", "A", json!({}));
+        registry.register("b", "B", json!({}));
+        let mut names = Vec::new();
+        for tool in &registry {
+            names.push(tool.name.as_str());
+        }
+        assert_eq!(names, vec!["a", "b"]);
+    }
+
+    #[test]
+    fn into_iterator_empty() {
+        let registry = ToolRegistry::new();
+        let count = (&registry).into_iter().count();
+        assert_eq!(count, 0);
     }
 
     // ---- From<&McpTool> for rmcp::model::Tool ----

@@ -48,6 +48,10 @@ impl ToolResponse {
     ///
     /// Unlike [`success`](Self::success), which takes a pre-built `serde_json::Value`,
     /// this method accepts any serialisable type directly.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`KanameError::Json`](crate::KanameError::Json) if serialisation fails.
     pub fn from_serialize(value: &impl serde::Serialize) -> Result<CallToolResult, crate::KanameError> {
         let v = serde_json::to_value(value)?;
         Ok(Self::success(&v))
