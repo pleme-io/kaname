@@ -34,14 +34,14 @@ impl ToolResponse {
 
     /// Build an error result with a plain-text message.
     #[must_use]
-    pub fn error(msg: &str) -> CallToolResult {
-        Self::build(msg, true)
+    pub fn error(msg: impl AsRef<str>) -> CallToolResult {
+        Self::build(msg.as_ref(), true)
     }
 
     /// Build a successful result containing plain text.
     #[must_use]
-    pub fn text(msg: &str) -> CallToolResult {
-        Self::build(msg, false)
+    pub fn text(msg: impl AsRef<str>) -> CallToolResult {
+        Self::build(msg.as_ref(), false)
     }
 
     /// Build a successful result with pretty-printed JSON as text.
@@ -340,6 +340,24 @@ mod tests {
         // Even scalars should round-trip through pretty-print.
         let result = ToolResponse::json_text(&json!(42));
         assert_eq!(first_text(&result), "42");
+        assert_eq!(result.is_error, Some(false));
+    }
+
+    // --- AsRef<str> acceptance ---
+
+    #[test]
+    fn error_accepts_owned_string() {
+        let msg = String::from("owned error");
+        let result = ToolResponse::error(msg);
+        assert_eq!(first_text(&result), "owned error");
+        assert_eq!(result.is_error, Some(true));
+    }
+
+    #[test]
+    fn text_accepts_owned_string() {
+        let msg = String::from("owned text");
+        let result = ToolResponse::text(msg);
+        assert_eq!(first_text(&result), "owned text");
         assert_eq!(result.is_error, Some(false));
     }
 
