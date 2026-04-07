@@ -29,8 +29,22 @@ mod server;
 
 pub use config_tools::{register_config_tools, ConfigGetInput, ConfigHandler, ConfigSetInput, StatusInput};
 pub use error::KanameError;
-pub use response::ToolResponse;
+pub use response::{ToolResponse, json_err, json_ok, json_result};
 pub use server::{McpServerInfo, McpTool, ToolRegistry};
 
 pub use rmcp;
 pub use schemars;
+
+/// Convenience re-exports for common usage.
+///
+/// ```rust,ignore
+/// use kaname::prelude::*;
+/// ```
+pub mod prelude {
+    pub use crate::config_tools::{
+        ConfigGetInput, ConfigHandler, ConfigSetInput, StatusInput, register_config_tools,
+    };
+    pub use crate::error::KanameError;
+    pub use crate::response::{ToolResponse, json_err, json_ok, json_result};
+    pub use crate::server::{McpServerInfo, McpTool, ToolRegistry};
+}

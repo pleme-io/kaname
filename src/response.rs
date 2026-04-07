@@ -56,6 +56,36 @@ impl ToolResponse {
     }
 }
 
+/// Build a successful [`CallToolResult`] from any serialisable value.
+///
+/// Shorthand for `ToolResponse::success(&serde_json::to_value(v)?)` that
+/// accepts any `Serialize` implementor directly.
+pub fn json_ok(value: &impl serde::Serialize) -> Result<CallToolResult, crate::KanameError> {
+    let v = serde_json::to_value(value)?;
+    Ok(ToolResponse::success(&v))
+}
+
+/// Build an error [`CallToolResult`] from any [`std::fmt::Display`] value.
+///
+/// Shorthand for `ToolResponse::error(&e.to_string())`.
+#[must_use]
+pub fn json_err(error: &impl std::fmt::Display) -> CallToolResult {
+    ToolResponse::error(&error.to_string())
+}
+
+/// Convert a `Result<T, E>` into a [`CallToolResult`].
+///
+/// On `Ok(v)`, serialises `v` as compact JSON (like [`json_ok`]).
+/// On `Err(e)`, formats the error as a plain-text error result (like [`json_err`]).
+pub fn json_result<T: serde::Serialize, E: std::fmt::Display>(
+    result: Result<T, E>,
+) -> Result<CallToolResult, crate::KanameError> {
+    match result {
+        Ok(v) => json_ok(&v),
+        Err(e) => Ok(json_err(&e)),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use serde_json::json;

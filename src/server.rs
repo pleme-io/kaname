@@ -6,7 +6,7 @@ use std::sync::Arc;
 pub struct McpServerInfo {
     /// Human-readable server name (e.g. `"hikyaku"`).
     pub name: String,
-    /// SemVer version string (e.g. `"0.1.0"`).
+    /// Semantic version string (e.g. `"0.1.0"`).
     pub version: String,
     /// One-line description of the server's purpose.
     pub description: String,
