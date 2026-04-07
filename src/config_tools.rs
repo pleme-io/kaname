@@ -17,7 +17,7 @@ use serde::Deserialize;
 /// Input for the `config_get` MCP tool.
 ///
 /// Shared across all pleme-io apps that expose configuration via MCP.
-#[derive(Debug, Clone, Deserialize, schemars::JsonSchema)]
+#[derive(Debug, Clone, Default, Deserialize, schemars::JsonSchema)]
 pub struct ConfigGetInput {
     /// Config key to retrieve (dot-separated path, e.g. `appearance.font_size`).
     /// Omit to get all configuration.
@@ -37,7 +37,7 @@ pub struct ConfigSetInput {
 }
 
 /// Input for the `status` MCP tool (common across apps).
-#[derive(Debug, Clone, Deserialize, schemars::JsonSchema)]
+#[derive(Debug, Clone, Default, Deserialize, schemars::JsonSchema)]
 pub struct StatusInput {
     /// Optional section to query (e.g. `cpu`, `memory`, `connections`).
     #[schemars(description = "Optional status section to query")]
@@ -502,6 +502,20 @@ mod tests {
         let schema = schemars::schema_for!(StatusInput);
         let value = serde_json::to_value(&schema).unwrap();
         assert!(value["properties"]["section"].is_object());
+    }
+
+    // ---- Default impls ----
+
+    #[test]
+    fn config_get_input_default_has_no_key() {
+        let input = ConfigGetInput::default();
+        assert!(input.key.is_none());
+    }
+
+    #[test]
+    fn status_input_default_has_no_section() {
+        let input = StatusInput::default();
+        assert!(input.section.is_none());
     }
 
     // ---- double registration is idempotent ----
