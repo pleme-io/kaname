@@ -1,6 +1,6 @@
 [package]
 name = "kaname"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 rust-version = "1.89.0"
 description = "Kaname (要) — MCP server scaffold: tool registry, response helpers, and rmcp boilerplate"
