@@ -2043,6 +2043,20 @@
           "target": "cfg(not(all(target_family = \"wasm\", target_os = \"unknown\")))"
         },
         {
+          "name": "chrono",
+          "package_key": "chrono-0.4.44",
+          "kind": "normal",
+          "features": [
+            "serde",
+            "clock",
+            "std",
+            "oldtime"
+          ],
+          "uses_default_features": false,
+          "optional": false,
+          "target": "cfg(all(target_family = \"wasm\", target_os = \"unknown\"))"
+        },
+        {
           "name": "futures",
           "package_key": "futures-0.3.32",
           "kind": "normal",
@@ -2184,6 +2198,20 @@
           "uses_default_features": false,
           "optional": false,
           "target": "cfg(not(all(target_family = \"wasm\", target_os = \"unknown\")))"
+        },
+        {
+          "name": "chrono",
+          "package_key": "chrono-0.4.44",
+          "kind": "normal",
+          "features": [
+            "serde",
+            "clock",
+            "std",
+            "oldtime"
+          ],
+          "uses_default_features": false,
+          "optional": false,
+          "target": "cfg(all(target_family = \"wasm\", target_os = \"unknown\"))"
         },
         {
           "name": "futures",
