@@ -18,6 +18,13 @@ missing_panics_doc = "allow"
 
 [dependencies]
 rmcp = { version = "0.15", features = ["server", "transport-io"] }
+# kotae (答え) — the typed answer a machine gives a machine.
+#
+# rmcp `is_error` is a BINARY flag, so a tool that found nothing, one that
+# did not understand the question, and one that could not look at all all
+# collapse into a single bucket. Those are three different facts and an
+# agent acts differently on each. kotae carries the discriminant.
+kotae = "0.1"
 schemars = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

@@ -1,6 +1,9 @@
 {
-  "schema_version": 1,
-  "cargo_lock_sha256": "18a9bc9108ade25a6c22d8170400b66fe178431bd872040e6bf4b317a7aa5c66",
+  "schema_version": 2,
+  "cargo_lock_sha256": "bda9bf4e0f64a72ac36c81ff1ab96699a5f72909e245bf62f12b85eb2ed2b48c",
+  "manifest_sha256": {
+    "Cargo.toml": "516e758dbd3ed5c89c5a8356e691a45f23ec03e3eddf2b16bf8ed197854e1008"
+  },
   "target_resolves": {
     "base": {
       "async-trait-0.1.89": {
@@ -74,9 +77,11 @@
             "name": "iana_time_zone",
             "package_key": "iana-time-zone-0.1.65",
             "kind": "normal",
-            "features": [],
+            "features": [
+              "fallback"
+            ],
             "uses_default_features": true,
-            "optional": false,
+            "optional": true,
             "target": "cfg(unix)",
             "tree": "target"
           },
@@ -85,7 +90,7 @@
             "package_key": "num-traits-0.2.19",
             "kind": "normal",
             "features": [],
-            "uses_default_features": true,
+            "uses_default_features": false,
             "optional": false,
             "target": null,
             "tree": "target"
@@ -194,8 +199,8 @@
             "package_key": "syn-2.0.117",
             "kind": "normal",
             "features": [
-              "full",
-              "extra-traits"
+              "extra-traits",
+              "full"
             ],
             "uses_default_features": true,
             "optional": false,
@@ -256,8 +261,10 @@
             "name": "futures_channel",
             "package_key": "futures-channel-0.3.32",
             "kind": "normal",
-            "features": [],
-            "uses_default_features": true,
+            "features": [
+              "sink"
+            ],
+            "uses_default_features": false,
             "optional": false,
             "target": null,
             "tree": "target"
@@ -267,7 +274,7 @@
             "package_key": "futures-core-0.3.32",
             "kind": "normal",
             "features": [],
-            "uses_default_features": true,
+            "uses_default_features": false,
             "optional": false,
             "target": null,
             "tree": "target"
@@ -277,8 +284,8 @@
             "package_key": "futures-executor-0.3.32",
             "kind": "normal",
             "features": [],
-            "uses_default_features": true,
-            "optional": false,
+            "uses_default_features": false,
+            "optional": true,
             "target": null,
             "tree": "target"
           },
@@ -287,7 +294,7 @@
             "package_key": "futures-io-0.3.32",
             "kind": "normal",
             "features": [],
-            "uses_default_features": true,
+            "uses_default_features": false,
             "optional": false,
             "target": null,
             "tree": "target"
@@ -297,7 +304,7 @@
             "package_key": "futures-sink-0.3.32",
             "kind": "normal",
             "features": [],
-            "uses_default_features": true,
+            "uses_default_features": false,
             "optional": false,
             "target": null,
             "tree": "target"
@@ -307,7 +314,7 @@
             "package_key": "futures-task-0.3.32",
             "kind": "normal",
             "features": [],
-            "uses_default_features": true,
+            "uses_default_features": false,
             "optional": false,
             "target": null,
             "tree": "target"
@@ -316,8 +323,10 @@
             "name": "futures_util",
             "package_key": "futures-util-0.3.32",
             "kind": "normal",
-            "features": [],
-            "uses_default_features": true,
+            "features": [
+              "sink"
+            ],
+            "uses_default_features": false,
             "optional": false,
             "target": null,
             "tree": "target"
@@ -340,7 +349,7 @@
             "package_key": "futures-core-0.3.32",
             "kind": "normal",
             "features": [],
-            "uses_default_features": true,
+            "uses_default_features": false,
             "optional": false,
             "target": null,
             "tree": "target"
@@ -350,8 +359,8 @@
             "package_key": "futures-sink-0.3.32",
             "kind": "normal",
             "features": [],
-            "uses_default_features": true,
-            "optional": false,
+            "uses_default_features": false,
+            "optional": true,
             "target": null,
             "tree": "target"
           }
@@ -380,7 +389,7 @@
             "package_key": "futures-core-0.3.32",
             "kind": "normal",
             "features": [],
-            "uses_default_features": true,
+            "uses_default_features": false,
             "optional": false,
             "target": null,
             "tree": "target"
@@ -390,7 +399,7 @@
             "package_key": "futures-task-0.3.32",
             "kind": "normal",
             "features": [],
-            "uses_default_features": true,
+            "uses_default_features": false,
             "optional": false,
             "target": null,
             "tree": "target"
@@ -400,7 +409,7 @@
             "package_key": "futures-util-0.3.32",
             "kind": "normal",
             "features": [],
-            "uses_default_features": true,
+            "uses_default_features": false,
             "optional": false,
             "target": null,
             "tree": "target"
@@ -479,9 +488,11 @@
             "name": "futures_channel",
             "package_key": "futures-channel-0.3.32",
             "kind": "normal",
-            "features": [],
-            "uses_default_features": true,
-            "optional": false,
+            "features": [
+              "std"
+            ],
+            "uses_default_features": false,
+            "optional": true,
             "target": null,
             "tree": "target"
           },
@@ -490,7 +501,7 @@
             "package_key": "futures-core-0.3.32",
             "kind": "normal",
             "features": [],
-            "uses_default_features": true,
+            "uses_default_features": false,
             "optional": false,
             "target": null,
             "tree": "target"
@@ -499,9 +510,11 @@
             "name": "futures_io",
             "package_key": "futures-io-0.3.32",
             "kind": "normal",
-            "features": [],
-            "uses_default_features": true,
-            "optional": false,
+            "features": [
+              "std"
+            ],
+            "uses_default_features": false,
+            "optional": true,
             "target": null,
             "tree": "target"
           },
@@ -510,8 +523,8 @@
             "package_key": "futures-macro-0.3.32",
             "kind": "normal",
             "features": [],
-            "uses_default_features": true,
-            "optional": false,
+            "uses_default_features": false,
+            "optional": true,
             "target": null,
             "tree": "host"
           },
@@ -520,8 +533,8 @@
             "package_key": "futures-sink-0.3.32",
             "kind": "normal",
             "features": [],
-            "uses_default_features": true,
-            "optional": false,
+            "uses_default_features": false,
+            "optional": true,
             "target": null,
             "tree": "target"
           },
@@ -530,7 +543,7 @@
             "package_key": "futures-task-0.3.32",
             "kind": "normal",
             "features": [],
-            "uses_default_features": true,
+            "uses_default_features": false,
             "optional": false,
             "target": null,
             "tree": "target"
@@ -596,6 +609,16 @@
       "kaname-0.1.1": {
         "runtime_dependencies": [
           {
+            "name": "kotae",
+            "package_key": "kotae-0.1.1",
+            "kind": "normal",
+            "features": [],
+            "uses_default_features": true,
+            "optional": false,
+            "target": null,
+            "tree": "target"
+          },
+          {
             "name": "rmcp",
             "package_key": "rmcp-0.15.0",
             "kind": "normal",
@@ -655,8 +678,8 @@
             "package_key": "tokio-1.52.3",
             "kind": "normal",
             "features": [
-              "rt-multi-thread",
-              "macros"
+              "macros",
+              "rt-multi-thread"
             ],
             "uses_default_features": true,
             "optional": false,
@@ -666,6 +689,34 @@
           {
             "name": "tracing",
             "package_key": "tracing-0.1.44",
+            "kind": "normal",
+            "features": [],
+            "uses_default_features": true,
+            "optional": false,
+            "target": null,
+            "tree": "target"
+          }
+        ],
+        "build_dependencies": [],
+        "features": []
+      },
+      "kotae-0.1.1": {
+        "runtime_dependencies": [
+          {
+            "name": "serde",
+            "package_key": "serde-1.0.228",
+            "kind": "normal",
+            "features": [
+              "derive"
+            ],
+            "uses_default_features": true,
+            "optional": false,
+            "target": null,
+            "tree": "target"
+          },
+          {
+            "name": "serde_json",
+            "package_key": "serde_json-1.0.150",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -748,7 +799,7 @@
             "package_key": "proc-macro2-1.0.106",
             "kind": "normal",
             "features": [],
-            "uses_default_features": true,
+            "uses_default_features": false,
             "optional": false,
             "target": null,
             "tree": "target"
@@ -839,14 +890,14 @@
             "package_key": "chrono-0.4.44",
             "kind": "normal",
             "features": [
-              "serde",
               "clock",
-              "std",
-              "oldtime"
+              "oldtime",
+              "serde",
+              "std"
             ],
             "uses_default_features": false,
             "optional": false,
-            "target": "cfg(not(all(target_family = \"wasm\", target_os = \"unknown\")))",
+            "target": "cfg(all(target_family = \"wasm\", target_os = \"unknown\"))",
             "tree": "target"
           },
           {
@@ -854,14 +905,11 @@
             "package_key": "chrono-0.4.44",
             "kind": "normal",
             "features": [
-              "serde",
-              "clock",
-              "std",
-              "oldtime"
+              "serde"
             ],
-            "uses_default_features": false,
+            "uses_default_features": true,
             "optional": false,
-            "target": "cfg(all(target_family = \"wasm\", target_os = \"unknown\"))",
+            "target": "cfg(not(all(target_family = \"wasm\", target_os = \"unknown\")))",
             "tree": "target"
           },
           {
@@ -900,7 +948,7 @@
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
-            "optional": false,
+            "optional": true,
             "target": null,
             "tree": "host"
           },
@@ -954,9 +1002,9 @@
             "package_key": "tokio-1.52.3",
             "kind": "normal",
             "features": [
-              "sync",
               "macros",
               "rt",
+              "sync",
               "time"
             ],
             "uses_default_features": true,
@@ -1226,8 +1274,10 @@
             "name": "proc_macro2",
             "package_key": "proc-macro2-1.0.106",
             "kind": "normal",
-            "features": [],
-            "uses_default_features": true,
+            "features": [
+              "proc-macro"
+            ],
+            "uses_default_features": false,
             "optional": false,
             "target": null,
             "tree": "target"
@@ -1273,7 +1323,7 @@
             "package_key": "proc-macro2-1.0.106",
             "kind": "normal",
             "features": [],
-            "uses_default_features": true,
+            "uses_default_features": false,
             "optional": false,
             "target": null,
             "tree": "target"
@@ -1376,7 +1426,7 @@
             "package_key": "proc-macro2-1.0.106",
             "kind": "normal",
             "features": [],
-            "uses_default_features": true,
+            "uses_default_features": false,
             "optional": false,
             "target": null,
             "tree": "target"
@@ -1499,7 +1549,7 @@
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
-            "optional": false,
+            "optional": true,
             "target": null,
             "tree": "host"
           }
@@ -1635,7 +1685,7 @@
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
-            "optional": false,
+            "optional": true,
             "target": null,
             "tree": "host"
           },
@@ -1644,7 +1694,7 @@
             "package_key": "tracing-core-0.1.36",
             "kind": "normal",
             "features": [],
-            "uses_default_features": true,
+            "uses_default_features": false,
             "optional": false,
             "target": null,
             "tree": "target"
@@ -1685,13 +1735,13 @@
             "package_key": "syn-2.0.117",
             "kind": "normal",
             "features": [
+              "clone-impls",
+              "extra-traits",
               "full",
               "parsing",
               "printing",
-              "visit-mut",
-              "clone-impls",
-              "extra-traits",
-              "proc-macro"
+              "proc-macro",
+              "visit-mut"
             ],
             "uses_default_features": false,
             "optional": false,
@@ -1763,6 +1813,28 @@
           }
         }
       },
+      "aarch64-unknown-linux-gnu": {
+        "overrides": {
+          "iana-time-zone-0.1.65": {
+            "runtime_dependencies": [],
+            "build_dependencies": [],
+            "features": [
+              "fallback"
+            ]
+          }
+        }
+      },
+      "aarch64-unknown-linux-musl": {
+        "overrides": {
+          "iana-time-zone-0.1.65": {
+            "runtime_dependencies": [],
+            "build_dependencies": [],
+            "features": [
+              "fallback"
+            ]
+          }
+        }
+      },
       "x86_64-apple-darwin": {
         "overrides": {
           "core-foundation-sys-0.8.7": {
@@ -1805,28 +1877,6 @@
         }
       },
       "x86_64-unknown-linux-musl": {
-        "overrides": {
-          "iana-time-zone-0.1.65": {
-            "runtime_dependencies": [],
-            "build_dependencies": [],
-            "features": [
-              "fallback"
-            ]
-          }
-        }
-      },
-      "aarch64-unknown-linux-gnu": {
-        "overrides": {
-          "iana-time-zone-0.1.65": {
-            "runtime_dependencies": [],
-            "build_dependencies": [],
-            "features": [
-              "fallback"
-            ]
-          }
-        }
-      },
-      "aarch64-unknown-linux-musl": {
         "overrides": {
           "iana-time-zone-0.1.65": {
             "runtime_dependencies": [],
@@ -1915,6 +1965,9 @@
         "name": "kaname",
         "path": "src/lib.rs"
       }
+    },
+    "kotae-0.1.1": {
+      "edition": "2024"
     },
     "memchr-2.8.0": {
       "edition": "2021"

@@ -107,6 +107,69 @@ pub fn json_result<T: serde::Serialize, E: std::fmt::Display>(
     }
 }
 
+// ── The four typed outcomes (kotae) ────────────────────────────────
+//
+// The constructors above answer ONE question: did it work? `is_error` is a
+// binary flag, so a tool that found nothing, one that did not understand the
+// question, and one that could not look at all all arrive as the same value.
+//
+// Those are three different facts. An agent reading them acts differently on
+// each, and the expensive confusion is the last folding into the first: an
+// empty list means "there is nothing there", so a credential expiry read as an
+// empty list reports a workload deleted that is running perfectly.
+//
+// These are ADDITIVE on purpose, and the reason is not compatibility. The
+// LIBRARY cannot know which of the four a given call site means — only the call
+// site knows. Mechanically rewriting the existing `error(..)` calls into
+// `blind(..)` would be the substrate guessing, which is exactly the fabrication
+// kotae exists to prevent. So the vocabulary is offered, and each call site
+// adopts the arm it actually means.
+impl ToolResponse {
+    /// The tool answered and there is something. Carries `outcome: "found"`.
+    ///
+    /// # Errors
+    ///
+    /// [`KanameError::Json`](crate::KanameError::Json) if the payload cannot be
+    /// serialised.
+    pub fn found(value: &impl serde::Serialize) -> Result<CallToolResult, crate::KanameError> {
+        let v = serde_json::to_value(value)?;
+        Ok(Self::build(kotae::Answer::found_value(v).render(), false))
+    }
+
+    /// The tool answered and there is **nothing** — a finding, not a failure.
+    ///
+    /// `of` names what was looked for, so the answer reads as "no pods in
+    /// kube-system" rather than a bare `[]` whose subject the reader has to
+    /// reconstruct. NOT an error: the tool did its job.
+    #[must_use]
+    pub fn empty(of: impl Into<String>) -> CallToolResult {
+        Self::build(kotae::Answer::empty(of).render(), false)
+    }
+
+    /// The question was not understood, and here is what would be.
+    ///
+    /// `is_error` is true — the CALLER must change something — but the answer
+    /// carries the legal set so the retry costs one call rather than a
+    /// conversation.
+    pub fn refused(
+        because: impl Into<String>,
+        legal: impl IntoIterator<Item = impl Into<String>>,
+    ) -> CallToolResult {
+        Self::build(kotae::Answer::refused(because, legal).render(), true)
+    }
+
+    /// The question could not be put at all — the network was down, the
+    /// credential expired, the daemon was not running.
+    ///
+    /// **Not an absence and not a denial.** The reader must conclude nothing
+    /// about the subject, only about the attempt. This is the arm most
+    /// `error(..)` call sites actually mean.
+    #[must_use]
+    pub fn blind(because: impl Into<String>) -> CallToolResult {
+        Self::build(kotae::Answer::blind(because).render(), true)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use serde_json::json;
@@ -565,6 +628,61 @@ mod tests {
         let r: Result<Count, String> = Ok(Count { n: 5 });
         let result = json_result(r).unwrap();
         assert_eq!(first_text(&result), r#"{"n":5}"#);
+    }
+
+    /// **THE DISTINCTION THE FOUR EXIST FOR.** rmcp `is_error` is binary, so
+    /// before these constructors an empty result, a misunderstood question and
+    /// an unreachable backend were the same value. A reader must be able to
+    /// tell them apart from the payload alone.
+    #[test]
+    fn the_four_outcomes_are_distinguishable_by_their_discriminant() {
+        let answers = [
+            ToolResponse::found(&serde_json::json!({"n": 1})).expect("serialises"),
+            ToolResponse::empty("pods in kube-system"),
+            ToolResponse::refused("unknown kind `poddz`", ["pod", "node"]),
+            ToolResponse::blind("the credential expired"),
+        ];
+        let discriminants: Vec<String> = answers
+            .iter()
+            .map(|a| {
+                let v: serde_json::Value =
+                    serde_json::from_str(&first_text(a)).expect("every answer is valid JSON");
+                v["outcome"].as_str().expect("carries a discriminant").to_owned()
+            })
+            .collect();
+        let mut sorted = discriminants.clone();
+        sorted.sort();
+        sorted.dedup();
+        assert_eq!(sorted.len(), 4, "two outcomes collapsed: {discriminants:?}");
+    }
+
+    /// EMPTY is a finding, not a failure — the tool did its job and there is
+    /// nothing there. Flagging it as an error would tell an agent to retry
+    /// something that will keep answering the same way.
+    #[test]
+    fn empty_is_not_an_error_but_blind_is() {
+        assert_eq!(ToolResponse::empty("pods").is_error, Some(false));
+        assert_eq!(ToolResponse::blind("no network").is_error, Some(true));
+        assert_eq!(ToolResponse::refused("bad", ["good"]).is_error, Some(true));
+    }
+
+    /// A refusal names the legal set, so a retry costs one call rather than a
+    /// conversation.
+    #[test]
+    fn a_refusal_carries_what_would_have_been_accepted() {
+        let r = ToolResponse::refused("unknown kind `poddz`", ["pod", "service"]);
+        let v: serde_json::Value = serde_json::from_str(&first_text(&r)).expect("json");
+        assert_eq!(v["outcome"], "refused");
+        assert_eq!(v["legal"][0], "pod");
+    }
+
+    /// The existing constructors are untouched — this change is additive, and a
+    /// caller that has not adopted the vocabulary sees exactly what it did.
+    #[test]
+    fn the_original_constructors_are_unchanged() {
+        assert_eq!(first_text(&ToolResponse::text("hello")), "hello");
+        assert_eq!(ToolResponse::error("boom").is_error, Some(true));
+        assert_eq!(first_text(&ToolResponse::error("boom")), "boom");
     }
 
     #[test]

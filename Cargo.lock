@@ -268,6 +268,7 @@ dependencies = [
 name = "kaname"
 version = "0.1.1"
 dependencies = [
+ "kotae",
  "rmcp",
  "schemars",
  "serde",
@@ -275,6 +276,16 @@ dependencies = [
  "thiserror",
  "tokio",
  "tracing",
+]
+
+[[package]]
+name = "kotae"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1194689d317921722f9793d9d803d96801777c0359784ab33f2870ac9c040b04"
+dependencies = [
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
